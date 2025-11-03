@@ -1,0 +1,63 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy ASP.Net Core app to Azure Web App - AirBB
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Build with dotnet
+        run: dotnet build --configuration Release ./AirBB.sln
+
+      - name: dotnet publish
+        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp" ./AirBB.csproj
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: myapp
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: myapp
+
+      - name: Ensure publish profile secret exists
+        run: |
+          if [ -z "${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}" ]; then
+            echo "ERROR: Azure publish profile secret 'AZURE_WEBAPP_PUBLISH_PROFILE' is not set in repo secrets.";
+            echo "Please add the publish profile (from Azure Portal -> Get publish profile) to repository secrets with the name AZURE_WEBAPP_PUBLISH_PROFILE.";
+            exit 1;
+          fi
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'AirBB'
+          slot-name: 'Production'
+          package: ./myapp
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}

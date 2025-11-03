@@ -1,0 +1,125 @@
+﻿@model AirBB.Models.ViewModels.HomeViewModel
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Find Your Perfect Stay</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-action="Filter">
+                    <div class="mb-3">
+                        <label class="form-label">Where</label>
+                        <select class="form-select" asp-for="FilterCriteria.LocationId" asp-items="@(new SelectList(Model.Locations, "LocationId", "Name", Model.FilterCriteria.LocationId))">
+                            <option value="">All Locations</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">When</label>
+                        <input type="text" class="form-control" id="dateRange" name="dateRange" 
+                               placeholder="Select dates" readonly>
+                        <input type="hidden" asp-for="FilterCriteria.CheckInDate" id="checkInDate" />
+                        <input type="hidden" asp-for="FilterCriteria.CheckOutDate" id="checkOutDate" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Who</label>
+                        <input type="number" class="form-control" asp-for="FilterCriteria.GuestNumber" min="1" max="20" value="@(Model.FilterCriteria.GuestNumber ?? 1)">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <h4>Available Residences (@Model.Residences.Count)</h4>
+        
+        @if (Model.Residences.Any())
+        {
+            <div class="row">
+                @foreach (var residence in Model.Residences)
+                {
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            @{
+                                // Simple image assignment based on residence name
+                                string imageFile = "chicago-loop.jpg"; // default
+                                
+                                if (residence.Name.Contains("Chicago", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    imageFile = "chicago-loop.jpg";
+                                }
+                                else if (residence.Name.Contains("New York", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    imageFile = "new-york-studio.jpg";
+                                }
+                                else if (residence.Name.Contains("Boston", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    imageFile = "boston-townhouse.jpg";
+                                }
+                            }
+                            
+                            <img src="/images/@imageFile" 
+                                 class="card-img-top" 
+                                 alt="@residence.Name" 
+                                 style="height: 200px; object-fit: cover;">
+                            
+                            <div class="card-body">
+                                <h5 class="card-title">@residence.Name</h5>
+                                <p class="card-text">
+                                    <i class="fas fa-map-marker-alt"></i> @residence.Location?.Name<br>
+                                    <i class="fas fa-users"></i> @residence.GuestNumber guests<br>
+                                    <i class="fas fa-bed"></i> @residence.BedroomNumber bedrooms<br>
+                                    <i class="fas fa-bath"></i> @residence.BathroomNumber bathrooms<br>
+                                    <strong>$@residence.PricePerNight/night</strong>
+                                </p>
+                                <a asp-action="Details" asp-route-id="@residence.ResidenceId" class="btn btn-outline-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                No residences found matching your criteria. Please try different filters.
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize date range picker
+            $('#dateRange').daterangepicker({
+                opens: 'left',
+                startDate: moment().add(1, 'days'),
+                endDate: moment().add(3, 'days'),
+                minDate: moment().add(1, 'days'),
+                autoUpdateInput: false,
+                locale: {
+                    cancelLabel: 'Clear',
+                    format: 'MM/DD/YYYY'
+                }
+            });
+
+            // Update the display and hidden fields when dates are selected
+            $('#dateRange').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+                $('#checkInDate').val(picker.startDate.format('YYYY-MM-DD'));
+                $('#checkOutDate').val(picker.endDate.format('YYYY-MM-DD'));
+            });
+
+            // Clear when cancelled
+            $('#dateRange').on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+                $('#checkInDate').val('');
+                $('#checkOutDate').val('');
+            });
+        });
+    </script>
+}

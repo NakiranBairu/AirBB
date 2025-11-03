@@ -1,0 +1,132 @@
+@model AirBB.Models.ViewModels.ResidenceDetailViewModel
+@{
+    Layout = "_MainLayout";
+    ViewData["Title"] = Model?.Residence?.Name ?? "Residence Details";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <img src="~/images/residences/@(Model?.Residence?.ResidencePicture ?? "default.jpg")" 
+                 class="card-img-top" 
+                 alt="@(Model?.Residence?.Name ?? "Residence")"
+                 onerror="this.src='https://via.placeholder.com/800x400?text=Residence+Image'">
+            <div class="card-body">
+                <h2 class="card-title">@(Model?.Residence?.Name ?? "Unnamed Residence")</h2>
+                <p class="text-muted">
+                    <i class="fas fa-map-marker-alt"></i> @(Model?.Residence?.Location?.Name ?? "Location not specified")
+                </p>
+                
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="fs-2 text-primary">👥</div>
+                            <strong>@(Model?.Residence?.GuestNumber ?? 0)</strong>
+                            <div class="text-muted">Guests</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="fs-2 text-success">🛏️</div>
+                            <strong>@(Model?.Residence?.BedroomNumber ?? 0)</strong>
+                            <div class="text-muted">Bedrooms</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="fs-2 text-info">🚿</div>
+                            <strong>@(Model?.Residence?.BathroomNumber ?? 0)</strong>
+                            <div class="text-muted">Bathrooms</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="fs-2 text-warning">💰</div>
+                            <strong>$@(Model?.Residence?.PricePerNight ?? 0)</strong>
+                            <div class="text-muted">Per night</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="card-text">Experience comfortable living in this beautiful residence located in @(Model?.Residence?.Location?.Name ?? "this area"). Perfect for your next getaway!</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card sticky-top" style="top: 100px;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Book Your Stay</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Reserve" method="post">
+                    <input type="hidden" name="residenceId" value="@(Model?.Residence?.ResidenceId ?? 0)" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Select Dates</label>
+                        <input type="text" id="dateRange" class="form-control" required>
+                        <input type="hidden" name="startDate" id="startDate">
+                        <input type="hidden" name="endDate" id="endDate">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Total Cost</label>
+                        <div class="fs-4 text-primary fw-bold" id="totalCost">
+                            $@(Model?.Residence?.PricePerNight ?? 0)
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-calendar-check"></i> Reserve Now
+                        </button>
+                        <a asp-action="Index" asp-controller="Home" 
+                           asp-route-locationId="@(Model?.Filter?.LocationId)"
+                           asp-route-guestNumber="@(Model?.Filter?.GuestNumber)"
+                           class="btn btn-outline-secondary">
+                            ← Back to Search
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script>
+        $(function() {
+            $('#dateRange').daterangepicker({
+                opens: 'left',
+                minDate: moment(),
+                startDate: moment(),
+                endDate: moment().add(1, 'days'),
+                locale: {
+                    format: 'MM/DD/YYYY'
+                }
+            }, function(start, end) {
+                $('#startDate').val(start.format('YYYY-MM-DD'));
+                $('#endDate').val(end.format('YYYY-MM-DD'));
+                calculateTotalCost(start, end);
+            });
+
+            // Set initial dates
+            $('#startDate').val(moment().format('YYYY-MM-DD'));
+            $('#endDate').val(moment().add(1, 'days').format('YYYY-MM-DD'));
+
+            function calculateTotalCost(start, end) {
+                const pricePerNight = @(Model?.Residence?.PricePerNight ?? 0);
+                
+                const nights = end.diff(start, 'days');
+                const totalCost = nights * pricePerNight;
+                $('#totalCost').text('$' + totalCost.toFixed(2) + ' for ' + nights + ' nights');
+            }
+            
+            // Calculate initial total cost
+            calculateTotalCost(moment(), moment().add(1, 'days'));
+        });
+    </script>
+}

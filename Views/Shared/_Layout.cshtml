@@ -1,0 +1,83 @@
+﻿@{
+    string area = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
+    bool isAdminArea = !string.IsNullOrEmpty(area) && area.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AirBB - @ViewData["Title"]</title>
+
+    <!-- CSS Libraries -->
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/font-awesome/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    
+    <!-- Your Custom CSS -->
+    <link href="~/css/site.css" rel="stylesheet" />
+</head>
+<body class="@(isAdminArea ? "" : "client-bg")">
+
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">AirBB</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["area"]?.ToString() == null ? "active" : "")" 
+                               asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Reservations" ? "active" : "")" 
+                               asp-area="" asp-controller="Home" asp-action="Reservations">
+                                <i class="fas fa-calendar-check"></i> My Reservations
+                                <span class="badge bg-primary reservation-badge">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark @(ViewContext.RouteData.Values["area"]?.ToString() == "Admin" ? "active" : "")" 
+                               asp-area="Admin" asp-controller="Home" asp-action="Index">Admin</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            <!-- Reservation Confirmation Message -->
+            @if (TempData["ReservationMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["ReservationMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2024 - AirBB - Team: [Your Team Names Here] - Leader: [Leader Name Here]
+        </div>
+    </footer>
+
+    <!-- JavaScript Libraries - CORRECT ORDER -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

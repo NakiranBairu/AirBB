@@ -1,0 +1,48 @@
+@{
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")" 
+                           asp-area="Admin" asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Residences" ? "active" : "")" 
+                           asp-area="Admin" asp-controller="Residences" asp-action="Index">
+                            <i class="fas fa-home"></i> Residences
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reservations" ? "active" : "")" 
+                           asp-area="Admin" asp-controller="Reservations" asp-action="Index">
+                            <i class="fas fa-calendar-alt"></i> Reservations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-globe"></i> Back to Site
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">@ViewData["Title"]</h1>
+            </div>
+            @RenderBody()
+        </main>
+    </div>
+</div>
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}

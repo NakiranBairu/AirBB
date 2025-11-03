@@ -1,0 +1,78 @@
+@model AirBB.Models.ViewModels.ReservationListViewModel
+@{
+    Layout = "_MainLayout";
+    ViewData["Title"] = "My Reservations";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>📋 My Reservations</h2>
+            <a asp-action="Index" asp-controller="Home" 
+               asp-route-locationId="@Model.Filter.LocationId"
+               asp-route-guestNumber="@Model.Filter.GuestNumber"
+               class="btn btn-outline-primary">
+                ← Back to Search
+            </a>
+        </div>
+        
+        @if (Model.Reservations.Any())
+        {
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Residence</th>
+                                    <th>Location</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Nights</th>
+                                    <th>Total Cost</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var reservation in Model.Reservations)
+                                {
+                                    var nights = (reservation.ReservationEndDate - reservation.ReservationStartDate).Days;
+                                    var totalCost = nights * (reservation.Residence?.PricePerNight ?? 0);
+                                    
+                                    <tr>
+                                        <td>
+                                            <strong>@(reservation.Residence?.Name ?? "Unnamed Residence")</strong>
+                                        </td>
+                                        <td>@(reservation.Residence?.Location?.Name ?? "Location not specified")</td>
+                                        <td>@reservation.ReservationStartDate.ToString("MM/dd/yyyy")</td>
+                                        <td>@reservation.ReservationEndDate.ToString("MM/dd/yyyy")</td>
+                                        <td>@nights</td>
+                                        <td><strong>$@totalCost</strong></td>
+                                        <td>
+                                            <form asp-action="Cancel" method="post" class="d-inline">
+                                                <input type="hidden" name="reservationId" value="@reservation.ReservationId" />
+                                                <button type="submit" class="btn btn-danger btn-sm" 
+                                                        onclick="return confirm('Are you sure you want to cancel this reservation?')">
+                                                    Cancel
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <div class="fs-1 mb-3">📭</div>
+                <h4>No reservations yet</h4>
+                <p class="text-muted">Start exploring residences and make your first reservation!</p>
+                <a asp-action="Index" asp-controller="Home" class="btn btn-primary">Find Residences</a>
+            </div>
+        }
+    </div>
+</div>
