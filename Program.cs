@@ -1,12 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using AirBB.Models;
-<<<<<<< HEAD
 using Microsoft.AspNetCore.DataProtection;
 using System.IO;
-=======
->>>>>>> 3c1ada2 (chore: commit AirBB project changes)
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -30,13 +26,9 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-<<<<<<< HEAD
 // Persist DataProtection keys to avoid "Error unprotecting the session cookie" when running locally
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "DataProtection-Keys")));
-
-=======
->>>>>>> 3c1ada2 (chore: commit AirBB project changes)
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
