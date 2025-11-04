@@ -22,7 +22,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0
+        fetch-depth: 1
     
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v4
@@ -31,11 +31,12 @@ jobs:
     
     - name: Build with dotnet
       run: |
-        dotnet build --configuration Release AirBB.sln
+        dotnet restore
+        dotnet build --configuration Release
         
     - name: dotnet publish
       run: |
-        dotnet publish AirBB.sln -c Release -o publish
+        dotnet publish --configuration Release --no-build --output ./publish
         
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
@@ -55,12 +56,18 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: .net-app
-        path: .
+        path: ./publish
+    
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        enable-AzPSSession: true
         
     - name: Deploy to Azure Web App
       id: deploy-to-webapp
       uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: .
+        resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
+        package: ./publish
