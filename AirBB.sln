@@ -2,11 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-<<<<<<< HEAD
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirBB", "..\AirBB.csproj", "{CA701AEE-69F6-01CE-D0DD-DE0FFE4D0F28}"
-=======
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirBB", "AirBB.csproj", "{ACA1A875-F19D-B094-5C31-3DCCDE1106D2}"
->>>>>>> 3c1ada2 (chore: commit AirBB project changes)
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,26 +10,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-<<<<<<< HEAD
-		{CA701AEE-69F6-01CE-D0DD-DE0FFE4D0F28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CA701AEE-69F6-01CE-D0DD-DE0FFE4D0F28}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CA701AEE-69F6-01CE-D0DD-DE0FFE4D0F28}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CA701AEE-69F6-01CE-D0DD-DE0FFE4D0F28}.Release|Any CPU.Build.0 = Release|Any CPU
-=======
 		{ACA1A875-F19D-B094-5C31-3DCCDE1106D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ACA1A875-F19D-B094-5C31-3DCCDE1106D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACA1A875-F19D-B094-5C31-3DCCDE1106D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACA1A875-F19D-B094-5C31-3DCCDE1106D2}.Release|Any CPU.Build.0 = Release|Any CPU
->>>>>>> 3c1ada2 (chore: commit AirBB project changes)
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-<<<<<<< HEAD
-		SolutionGuid = {D3F1CF26-1365-460E-AEB5-307D4B7EAFCC}
-=======
 		SolutionGuid = {619C2A5B-18AA-407A-9ECE-801B43EAC5AB}
->>>>>>> 3c1ada2 (chore: commit AirBB project changes)
 	EndGlobalSection
 EndGlobal
