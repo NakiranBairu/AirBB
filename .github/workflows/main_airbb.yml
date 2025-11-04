@@ -9,34 +9,34 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: 'AirBB' 
+  AZURE_WEBAPP_NAME: 'airbb-cxb3caa5e6g3hjg6'
   AZURE_RESOURCE_GROUP: 'Schoolproject'
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '8.0.x'
+  WORKING_DIRECTORY: '.'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    runs-on: windows-latest
     
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 1
     
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     
+    - name: Clean
+      run: dotnet clean && dotnet nuget locals all --clear
+    
+    - name: Restore dependencies
+      run: dotnet restore
+        
     - name: Build with dotnet
-      run: |
-        dotnet restore
-        dotnet build --configuration Release
+      run: dotnet build --configuration Release --no-restore
         
     - name: dotnet publish
-      run: |
-        dotnet publish --configuration Release --no-build --output ./publish
+      run: dotnet publish --configuration Release --no-build --output ./publish
         
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
@@ -52,16 +52,17 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     
     steps:
-    - name: Download artifact from build job
+    - name: Download artifact for deployment
       uses: actions/download-artifact@v4
       with:
         name: .net-app
         path: ./publish
-    
+
     - name: Deploy to Azure Web App
       id: deploy-to-webapp
       uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        slot-name: 'Production'
+        publish-profile: ${{ secrets.AZUREWEBAPP_PUBLISHPROFILE }}
         package: ./publish
