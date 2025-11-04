@@ -1,0 +1,43 @@
+## .NET Core
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.dbmdl
+*.jfm
+*.pfx
+*.publishsettings
+
+## Visual Studio
+.vs/
+*.ntvs*
+*.njsproj
+*.sln.docstates
+
+## Rider
+.idea/
+
+## User-specific files
+*.rsuser
+*.dtbcache.json
+
+## .NET Scaffolding
+ScaffoldingReadMe.txt
+
+## DataProtection Keys
+DataProtection-Keys/
+
+## Logs
+logs/
+*.log
+
+## Environment Files
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+## Dependencies
+wwwroot/lib/
