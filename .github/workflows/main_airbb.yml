@@ -9,16 +9,20 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: 'AirBB'  # Your exact app name in Schoolproject resource group
+  AZURE_WEBAPP_NAME: 'AirBB' 
   AZURE_RESOURCE_GROUP: 'Schoolproject'
   DOTNET_VERSION: '9.0.x'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v4
@@ -27,11 +31,11 @@ jobs:
     
     - name: Build with dotnet
       run: |
-        dotnet build --configuration Release
+        dotnet build --configuration Release AirBB.sln
         
     - name: dotnet publish
       run: |
-        dotnet publish -c Release -p:PublishDir=./publish
+        dotnet publish AirBB.sln -c Release -o publish
         
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
@@ -51,6 +55,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: .net-app
+        path: .
         
     - name: Deploy to Azure Web App
       id: deploy-to-webapp
