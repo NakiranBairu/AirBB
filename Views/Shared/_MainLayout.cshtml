@@ -1,0 +1,69 @@
+@{
+    Layout = "_Layout";
+    string area = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
+    string controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    bool isAdminArea = !string.IsNullOrEmpty(area) && area.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+}
+
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">AirBB</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#navbarMain" aria-controls="navbarMain" 
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link @(controller == "Home" && action == "Index" ? "active fw-bold" : "")" 
+                           asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-search me-1"></i>Search
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(controller == "Residence" && action == "Reservations" ? "active fw-bold" : "")" 
+                           asp-controller="Residence" asp-action="Reservations">
+                            <i class="fas fa-calendar-check me-1"></i>My Reservations
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    @if (!isAdminArea)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-cog me-1"></i>Admin
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="container mt-4">
+    @RenderBody()
+</main>
+
+<footer class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <a asp-controller="Home" asp-action="Support" class="text-light text-decoration-none">Support</a>
+            </div>
+            <div class="col-md-3">
+                <a asp-controller="Home" asp-action="CancellationPolicy" class="text-light text-decoration-none">Cancellation Policy</a>
+            </div>
+            <div class="col-md-3">
+                <a asp-controller="Home" asp-action="Terms" class="text-light text-decoration-none">Terms & Condition</a>
+            </div>
+            <div class="col-md-3">
+                <a asp-controller="Home" asp-action="CookiePolicy" class="text-light text-decoration-none">Cookie Policies</a>
+            </div>
+        </div>
+    </div>
+</footer>

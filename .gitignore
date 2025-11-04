@@ -1,26 +1,35 @@
 ## .NET Core
 bin/
 obj/
+
+## Visual Studio
+.vs/
 *.user
 *.userosscache
 *.suo
+*.sln.docstates
+*.ntvs*
+*.njsproj
 *.dbmdl
 *.jfm
 *.pfx
 *.publishsettings
 
-## Visual Studio
-.vs/
-*.ntvs*
-*.njsproj
-*.sln.docstates
+## VS Code
+.vscode/
 
 ## Rider
 .idea/
+_ReSharper*/
+*.[Rr]e[Ss]harper
 
 ## User-specific files
 *.rsuser
 *.dtbcache.json
+
+## Published output
+publish/
+out/
 
 ## .NET Scaffolding
 ScaffoldingReadMe.txt
@@ -31,6 +40,9 @@ DataProtection-Keys/
 ## Logs
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 ## Environment Files
 *.env
@@ -38,6 +50,17 @@ logs/
 .env.development.local
 .env.test.local
 .env.production.local
+appsettings.Development.json
+**/Properties/launchSettings.json
 
 ## Dependencies
 wwwroot/lib/
+node_modules/
+
+## Test and Coverage
+TestResults/
+coverage/
+
+## Lock files
+global.json.lock
+dotnet-tools.json.lock

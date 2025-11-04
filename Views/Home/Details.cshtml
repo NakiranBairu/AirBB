@@ -1,0 +1,92 @@
+@model AirBB.Models.ViewModels.ResidenceDetailViewModel
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                @{
+                    string imageFile = "chicago-loop.jpg";
+                    
+                    if (Model.Residence.Name.Contains("Chicago", StringComparison.OrdinalIgnoreCase))
+                    {
+                        imageFile = "chicago-loop.jpg";
+                    }
+                    else if (Model.Residence.Name.Contains("New York", StringComparison.OrdinalIgnoreCase))
+                    {
+                        imageFile = "new-york-studio.jpg";
+                    }
+                    else if (Model.Residence.Name.Contains("Boston", StringComparison.OrdinalIgnoreCase))
+                    {
+                        imageFile = "boston-townhouse.jpg";
+                    }
+                }
+                
+                <img src="/images/@imageFile" 
+                     class="card-img-top" 
+                     alt="@Model.Residence.Name" 
+                     style="height: 400px; object-fit: cover;">
+                <div class="card-body">
+                    <h2 class="card-title">@Model.Residence.Name</h2>
+                    <div class="mt-3">
+                        <p class="card-text">
+                            <i class="fas fa-map-marker-alt"></i> @(Model.Residence.Location?.Name ?? "Location not specified")<br>
+                            <i class="fas fa-users"></i> @Model.Residence.GuestNumber guests<br>
+                            <i class="fas fa-bed"></i> @Model.Residence.BedroomNumber bedrooms<br>
+                            <i class="fas fa-bath"></i> @Model.Residence.BathroomNumber bathrooms<br>
+                            <strong class="text-primary">$@Model.Residence.PricePerNight/night</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Make a Reservation</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-controller="Home" asp-action="Reserve">
+                        <input type="hidden" name="residenceId" value="@Model.Residence.ResidenceId" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select Dates</label>
+                            <input type="text" class="form-control" id="reservationDateRange" readonly>
+                            <input type="hidden" name="startDate" id="startDate" value="@Model.Reservation.ReservationStartDate.ToString("yyyy-MM-dd")" />
+                            <input type="hidden" name="endDate" id="endDate" value="@Model.Reservation.ReservationEndDate.ToString("yyyy-MM-dd")" />
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Reserve Now</button>
+                        </div>
+
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                By clicking "Reserve Now", you agree to our terms and conditions.
+                            </small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#reservationDateRange').daterangepicker({
+                opens: 'left',
+                startDate: moment('@Model.Reservation.ReservationStartDate.ToString("yyyy-MM-dd")'),
+                endDate: moment('@Model.Reservation.ReservationEndDate.ToString("yyyy-MM-dd")'),
+                minDate: moment(),
+                locale: {
+                    format: 'YYYY-MM-DD'
+                }
+            }, function(start, end) {
+                $('#startDate').val(start.format('YYYY-MM-DD'));
+                $('#endDate').val(end.format('YYYY-MM-DD'));
+            });
+        });
+    </script>
+}

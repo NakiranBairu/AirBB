@@ -1,0 +1,23 @@
+@{
+    Layout = "_Layout";
+    string area = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
+    bool isAdminArea = !string.IsNullOrEmpty(area) && area.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+}
+
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" asp-area="Admin" asp-controller="Home" asp-action="Index">AirBB Admin</a>
+            <div class="navbar-nav ms-auto">
+                @if (isAdminArea)
+                {
+                    <a class="nav-link" asp-controller="Home" asp-action="Index">Site</a>
+                }
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="container mt-4">
+    @RenderBody()
+</main>
