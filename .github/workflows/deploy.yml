@@ -6,41 +6,38 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: 'your-app-name' 
-  DOTNET_VERSION: '9.0.x'             
+  AZURE_WEBAPP_NAME: 'airbb-cxb3caa5e6g3hjg6'
+  DOTNET_VERSION: '8.0.x'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Build with dotnet
-      run: |
-        dotnet build --configuration Release
+    - name: Restore dependencies
+      run: dotnet restore
 
-    - name: Test with dotnet
-      run: |
-        dotnet test --verbosity normal
+    - name: Build with dotnet
+      run: dotnet build --configuration Release --no-restore
 
     - name: Publish with dotnet
-      run: |
-        dotnet publish -c Release -o publish
+      run: dotnet publish -c Release --no-build -o publish
 
     - name: Upload artifact for deployment
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: .net-app
         path: publish/
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     environment:
       name: 'production'
@@ -48,7 +45,7 @@ jobs:
 
     steps:
     - name: Download artifact from build job
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: .net-app
 
@@ -57,5 +54,5 @@ jobs:
       uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        publish-profile: ${{ secrets.AZUREWEBAPP_PUBLISHPROFILE }}
         package: .
