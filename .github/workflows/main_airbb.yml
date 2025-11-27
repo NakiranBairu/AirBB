@@ -24,14 +24,14 @@ jobs:
 
       - name: Clean and restore
         run: |
-          dotnet clean -c Release
-          dotnet restore
+          dotnet clean AirBB.csproj -c Release
+          dotnet restore AirBB.csproj
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build AirBB.csproj --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish --configuration Release --no-build -o ./publish
+        run: dotnet publish AirBB.csproj --configuration Release --no-build -o ./publish
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
