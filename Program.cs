@@ -3,23 +3,22 @@ using Microsoft.AspNetCore.Http;
 using AirBB.Models;
 using Microsoft.AspNetCore.DataProtection;
 using System.IO;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Determine SQLite path: prefer env var, otherwise development file or Azure writable path
+// Determine SQLite path: prefer env var, otherwise config, otherwise Azure writable path
 string? sqlitePath = Environment.GetEnvironmentVariable("SQLITE_PATH");
 if (string.IsNullOrEmpty(sqlitePath))
 {
-	if (builder.Environment.IsDevelopment())
+	// Read from configuration (this respects appsettings.Production.json when running in Production)
+	sqlitePath = builder.Configuration.GetConnectionString("DefaultConnection"); // typically Data Source=AirBB.db
+	if (string.IsNullOrEmpty(sqlitePath))
 	{
-		sqlitePath = builder.Configuration.GetConnectionString("DefaultConnection"); // typically Data Source=AirBB.db
-	}
-	else
-	{
-		// Use Azure App Service writable location by default
+		// Default fallback for Azure App Service
 		sqlitePath = "Data Source=D:/home/data/AirBB.db";
 	}
 }
@@ -71,6 +70,12 @@ if (!app.Environment.IsDevelopment())
 	app.UseHsts();
 }
 
+// Honor forwarded headers from reverse proxies (Azure Front Door / App Service)
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+	ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -86,6 +91,16 @@ app.MapAreaControllerRoute(
 app.MapControllerRoute(
 	name: "default",
 	pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Optional: apply EF Core migrations at startup when `APPLY_MIGRATIONS=true` is set in the environment.
+if (Environment.GetEnvironmentVariable("APPLY_MIGRATIONS") == "true")
+{
+	using (var scope = app.Services.CreateScope())
+	{
+		var db = scope.ServiceProvider.GetRequiredService<AirBBContext>();
+		db.Database.Migrate();
+	}
+}
 
 app.Run();
 

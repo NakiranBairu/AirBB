@@ -8,14 +8,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-permissions:
-  id-token: write
-  contents: read
-
 env:
   AZURE_WEBAPP_NAME: 'airbb-cxb3caa5e6g3hjg6'
-  DOTNET_VERSION: '9.0.x'
-  AZURE_RESOURCE_GROUP: 'Schoolproject'
+  DOTNET_VERSION: '8.0.x'
 
 jobs:
   build-and-deploy:
@@ -27,14 +22,16 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Azure login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Clean and restore
+        run: |
+          dotnet clean -c Release
+          dotnet restore
 
-      - run: dotnet restore
-      - run: dotnet build --configuration Release --no-restore
-      - run: dotnet publish --configuration Release --no-build -o ./publish
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish --configuration Release --no-build -o ./publish
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
