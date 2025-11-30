@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace AirBB.Models
+namespace AirBB.Models.Infrastructure
 {
     public static class SessionExtensions
     {

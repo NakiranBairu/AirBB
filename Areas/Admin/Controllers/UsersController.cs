@@ -1,23 +1,27 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AirBB.Models;
+using AirBB.Models.DataLayer.Repositories;
+using AirBB.Models.DataLayer;
+using AirBB.Models.Domain;
 
 namespace AirBB.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class UsersController : Controller
     {
-        private readonly AirBBContext _context;
+        private readonly IGenericRepository<User> _userRepo;
 
-        public UsersController(AirBBContext context)
+        public UsersController(IGenericRepository<User> userRepo)
         {
-            _context = context;
+            _userRepo = userRepo;
         }
 
         // GET: Admin/Users
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Users.ToListAsync());
+            var users = await _userRepo.GetAllAsync();
+            return View(users);
         }
 
         // GET: Admin/Users/Create
@@ -39,8 +43,7 @@ namespace AirBB.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Add(user);
-                await _context.SaveChangesAsync();
+                await _userRepo.AddAsync(user);
                 TempData["SuccessMessage"] = "User created successfully!";
                 return RedirectToAction(nameof(Index));
             }
@@ -61,7 +64,7 @@ namespace AirBB.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users.FindAsync(id);
+            var user = await _userRepo.GetByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -89,8 +92,7 @@ namespace AirBB.Areas.Admin.Controllers
             {
                 try
                 {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
+                    await _userRepo.UpdateAsync(user);
                     TempData["SuccessMessage"] = "User updated successfully!";
                 }
                 catch (DbUpdateConcurrencyException)
@@ -123,8 +125,11 @@ namespace AirBB.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.UserId == id);
+            var options = new QueryOptions<User>
+            {
+                Filter = u => u.UserId == id
+            };
+            var user = (await _userRepo.GetAllAsync(options)).FirstOrDefault();
             if (user == null)
             {
                 return NotFound();
@@ -138,11 +143,10 @@ namespace AirBB.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _userRepo.GetByIdAsync(id);
             if (user != null)
             {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
+                await _userRepo.DeleteAsync(user);
                 TempData["SuccessMessage"] = "User deleted successfully!";
             }
             return RedirectToAction(nameof(Index));
@@ -150,7 +154,7 @@ namespace AirBB.Areas.Admin.Controllers
 
         private bool UserExists(int id)
         {
-            return _context.Users.Any(e => e.UserId == id);
+            return _userRepo.Query().Any(e => e.UserId == id);
         }
     }
 }

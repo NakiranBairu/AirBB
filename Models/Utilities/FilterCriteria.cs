@@ -1,4 +1,4 @@
-namespace AirBB.Models
+namespace AirBB.Models.Utilities
 {
     public class FilterCriteria
     {

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AirBB.Models
+namespace AirBB.Models.Domain
 {
     public class Client
     {

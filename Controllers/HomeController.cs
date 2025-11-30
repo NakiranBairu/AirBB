@@ -2,25 +2,37 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AirBB.Models;
 using AirBB.Models.ViewModels;
+using AirBB.Models.DataLayer.Repositories;
+using AirBB.Models.DataLayer;
+using AirBB.Models.Domain;
+using AirBB.Models.Infrastructure;
+using AirBB.Models.Utilities;
 using System.Text.Json;
 
 namespace AirBB.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly AirBBContext _context;
+        private readonly IGenericRepository<Residence> _resRepo;
+        private readonly IGenericRepository<Location> _locRepo;
+        private readonly IGenericRepository<Reservation> _reservationRepo;
         private readonly ISessionManager _sessionManager;
 
-        public HomeController(AirBBContext context, ISessionManager sessionManager)
+        public HomeController(IGenericRepository<Residence> resRepo,
+            IGenericRepository<Location> locRepo,
+            IGenericRepository<Reservation> reservationRepo,
+            ISessionManager sessionManager)
         {
-            _context = context;
+            _resRepo = resRepo;
+            _locRepo = locRepo;
+            _reservationRepo = reservationRepo;
             _sessionManager = sessionManager;
         }
 
         public async Task<IActionResult> Index()
         {
             var filterCriteria = _sessionManager.GetFilterCriteria();
-            var locations = await _context.Locations.ToListAsync();
+            var locations = (await _locRepo.GetAllAsync()).ToList();
             var residences = await FilterResidences(filterCriteria);
     Console.WriteLine($"Index - FilterCriteria from session - LocationId: {filterCriteria.LocationId}, GuestNumber: {filterCriteria.GuestNumber}, CheckIn: {filterCriteria.CheckInDate}, CheckOut: {filterCriteria.CheckOutDate}");
 
@@ -56,11 +68,15 @@ namespace AirBB.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var residence = _context.Residences
-                .Include(r => r.Location)
-                .FirstOrDefault(r => r.ResidenceId == id);
+            var options = new QueryOptions<Residence>
+            {
+                Filter = r => r.ResidenceId == id,
+                Includes = new List<System.Linq.Expressions.Expression<Func<Residence, object>>> { r => r.Location! }
+            };
+
+            var residence = (await _resRepo.GetAllAsync(options)).FirstOrDefault();
 
             if (residence == null)
             {
@@ -84,11 +100,9 @@ namespace AirBB.Controllers
         }
 
         [HttpPost]
-        public IActionResult Reserve(int residenceId, DateTime startDate, DateTime endDate)
+        public async Task<IActionResult> Reserve(int residenceId, DateTime startDate, DateTime endDate)
         {
-            var residenceReservations = _context.Reservations
-                .Where(r => r.ResidenceId == residenceId)
-                .ToList();
+            var residenceReservations = await _reservationRepo.Query().Where(r => r.ResidenceId == residenceId).ToListAsync();
 
             var isAvailable = !residenceReservations.Any(r =>
                 r.ReservationStartDate < endDate &&
@@ -113,7 +127,7 @@ namespace AirBB.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult Reservations()
+        public async Task<IActionResult> Reservations()
         {
             var reservations = _sessionManager.GetReservations();
 
@@ -122,9 +136,7 @@ namespace AirBB.Controllers
             {
                 if (res.Residence == null)
                 {
-                    var residence = _context.Residences
-                        .Include(r => r.Location)
-                        .FirstOrDefault(r => r.ResidenceId == res.ResidenceId);
+                    var residence = await _resRepo.GetByIdAsync(res.ResidenceId);
                     if (residence != null)
                     {
                         res.Residence = residence;
@@ -176,12 +188,12 @@ namespace AirBB.Controllers
 
         private async Task<List<Residence>> FilterResidences(FilterCriteria criteria)
         {
+            var query = _resRepo.Query().Include(r => r.Location).Include(r => r.Reservations).AsQueryable();
+
             if (criteria == null)
             {
-                return await _context.Residences.Include(r => r.Location).ToListAsync();
+                return await query.ToListAsync();
             }
-
-            var query = _context.Residences.Include(r => r.Location).Include(r => r.Reservations).AsQueryable();
 
             // Filter by Location - only if LocationId is specified and greater than 0
             if (criteria.LocationId.HasValue && criteria.LocationId.Value > 0)
@@ -200,7 +212,7 @@ namespace AirBB.Controllers
             {
                 var checkIn = criteria.CheckInDate.Value;
                 var checkOut = criteria.CheckOutDate.Value;
-                
+
                 query = query.Where(r => r.Reservations == null || !r.Reservations.Any(res =>
                     res.ReservationStartDate < checkOut &&
                     res.ReservationEndDate > checkIn));

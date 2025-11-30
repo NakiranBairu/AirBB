@@ -24,6 +24,9 @@
 }
 
 <form asp-action="Create">
+    <div class="alert alert-warning">
+        <strong>Validation rule:</strong> Either <b>Email</b> or <b>Phone Number</b> is required. If both are blank, you will see an error below.
+    </div>
     <div class="row">
         <div class="col-md-6">
             <div class="form-group mb-3">

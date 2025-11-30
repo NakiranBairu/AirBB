@@ -24,6 +24,9 @@
 }
 
 <form asp-area="Admin" asp-controller="Residences" asp-action="Create" id="residenceForm" method="post">
+    <div class="alert alert-warning">
+        <strong>Validation rule:</strong> Owner must be an existing user. If you select an invalid owner, you will see an error below.
+    </div>
     @Html.AntiForgeryToken()
     <div class="row">
         <div class="col-md-6">

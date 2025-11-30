@@ -1,34 +1,47 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AirBB.Models;
+using AirBB.Models.DataLayer;
+using AirBB.Models.DataLayer.Repositories;
+using AirBB.Models.Domain;
+using System.Linq.Expressions;
 
 namespace AirBB.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class ResidencesController : Controller
     {
-        private readonly AirBBContext _context;
+        private readonly IGenericRepository<Residence> _resRepo;
+        private readonly IGenericRepository<Location> _locRepo;
+        private readonly IGenericRepository<User> _userRepo;
 
-        public ResidencesController(AirBBContext context)
+        public ResidencesController(IGenericRepository<Residence> resRepo,
+            IGenericRepository<Location> locRepo,
+            IGenericRepository<User> userRepo)
         {
-            _context = context;
+            _resRepo = resRepo;
+            _locRepo = locRepo;
+            _userRepo = userRepo;
         }
 
         // GET: Admin/Residences
         public async Task<IActionResult> Index()
         {
-            var residences = await _context.Residences
-                .Include(r => r.Location)
-                .Include(r => r.Owner)
-                .ToListAsync();
+            var options = new QueryOptions<Residence>
+            {
+                Includes = new List<Expression<Func<Residence, object>>> { r => r.Location!, r => r.Owner! }
+            };
+
+            var residences = await _resRepo.GetAllAsync(options);
             return View(residences);
         }
 
         // GET: Admin/Residences/Create
         public async Task<IActionResult> Create()
         {
-            ViewBag.Locations = await _context.Locations.ToListAsync();
-            ViewBag.Owners = await _context.Users.Where(u => u.UserType == UserType.Owner).ToListAsync();
+            ViewBag.Locations = await _locRepo.GetAllAsync();
+            var owners = (await _userRepo.GetAllAsync()).Where(u => u.UserType == UserType.Owner).ToList();
+            ViewBag.Owners = owners;
             return View();
         }
 
@@ -47,12 +60,18 @@ namespace AirBB.Areas.Admin.Controllers
                 }
             }
 
+            // Check that OwnerId exists in Users table
+            var ownerExists = await _userRepo.AnyAsync(u => u.UserId == residence.OwnerId);
+            if (!ownerExists)
+            {
+                ModelState.AddModelError("OwnerId", "Owner (User) does not exist. Please select a valid owner.");
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Add(residence);
-                    await _context.SaveChangesAsync();
+                    await _resRepo.AddAsync(residence);
                     TempData["SuccessMessage"] = "Residence created successfully!";
                     return RedirectToAction(nameof(Index));
                 }
@@ -63,8 +82,8 @@ namespace AirBB.Areas.Admin.Controllers
                 }
             }
 
-            ViewBag.Locations = await _context.Locations.ToListAsync();
-            ViewBag.Owners = await _context.Users.Where(u => u.UserType == UserType.Owner).ToListAsync();
+            ViewBag.Locations = await _locRepo.GetAllAsync();
+            ViewBag.Owners = (await _userRepo.GetAllAsync()).Where(u => u.UserType == UserType.Owner).ToList();
             return View(residence);
         }
 
@@ -76,14 +95,14 @@ namespace AirBB.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            var residence = await _context.Residences.FindAsync(id);
+            var residence = await _resRepo.GetByIdAsync(id);
             if (residence == null)
             {
                 return NotFound();
             }
 
-            ViewBag.Locations = await _context.Locations.ToListAsync();
-            ViewBag.Owners = await _context.Users.Where(u => u.UserType == UserType.Owner).ToListAsync();
+            ViewBag.Locations = await _locRepo.GetAllAsync();
+            ViewBag.Owners = (await _userRepo.GetAllAsync()).Where(u => u.UserType == UserType.Owner).ToList();
             return View(residence);
         }
 
@@ -111,8 +130,7 @@ namespace AirBB.Areas.Admin.Controllers
             {
                 try
                 {
-                    _context.Update(residence);
-                    await _context.SaveChangesAsync();
+                    await _resRepo.UpdateAsync(residence);
                     TempData["SuccessMessage"] = "Residence updated successfully!";
                     return RedirectToAction(nameof(Index));
                 }
@@ -134,8 +152,8 @@ namespace AirBB.Areas.Admin.Controllers
                 }
             }
 
-            ViewBag.Locations = await _context.Locations.ToListAsync();
-            ViewBag.Owners = await _context.Users.Where(u => u.UserType == UserType.Owner).ToListAsync();
+            ViewBag.Locations = await _locRepo.GetAllAsync();
+            ViewBag.Owners = (await _userRepo.GetAllAsync()).Where(u => u.UserType == UserType.Owner).ToList();
             return View(residence);
         }
 
@@ -147,10 +165,13 @@ namespace AirBB.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            var residence = await _context.Residences
-                .Include(r => r.Location)
-                .Include(r => r.Owner)
-                .FirstOrDefaultAsync(m => m.ResidenceId == id);
+            var options = new QueryOptions<Residence>
+            {
+                Filter = r => r.ResidenceId == id,
+                Includes = new List<Expression<Func<Residence, object>>> { r => r.Location!, r => r.Owner! }
+            };
+
+            var residence = (await _resRepo.GetAllAsync(options)).FirstOrDefault();
             if (residence == null)
             {
                 return NotFound();
@@ -164,11 +185,10 @@ namespace AirBB.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var residence = await _context.Residences.FindAsync(id);
+            var residence = await _resRepo.GetByIdAsync(id);
             if (residence != null)
             {
-                _context.Residences.Remove(residence);
-                await _context.SaveChangesAsync();
+                await _resRepo.DeleteAsync(residence);
                 TempData["SuccessMessage"] = "Residence deleted successfully!";
             }
             return RedirectToAction(nameof(Index));
@@ -176,7 +196,7 @@ namespace AirBB.Areas.Admin.Controllers
 
         private bool ResidenceExists(int id)
         {
-            return _context.Residences.Any(e => e.ResidenceId == id);
+            return _resRepo.Query().Any(e => e.ResidenceId == id);
         }
     }
 }

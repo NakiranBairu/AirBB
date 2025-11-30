@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AirBB.Models
+namespace AirBB.Models.Domain
 {
     public class Residence
     {

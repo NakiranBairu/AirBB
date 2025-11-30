@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace AirBB.Models
+namespace AirBB.Models.Domain
 {
     public class Location
     {

@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 using AirBB.Models.ViewModels;
+using AirBB.Models;
+using AirBB.Models.Domain;
+using AirBB.Models.Utilities;
 
-namespace AirBB.Models
+namespace AirBB.Models.Infrastructure
 {
     public class SessionWrapper
     {

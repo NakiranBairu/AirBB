@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using AirBB.Models;
+using AirBB.Models.DataLayer.Repositories;
+using AirBB.Models.Infrastructure;
 using Microsoft.AspNetCore.DataProtection;
 using System.IO;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -33,6 +35,8 @@ builder.Services.AddScoped<ISessionManager, SessionManager>();
 builder.Services.AddScoped<SessionWrapper>();
 builder.Services.AddScoped<CookieWrapper>();
 builder.Services.AddScoped<IDataSyncService, DataSyncService>();
+// Generic repository registration
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(Repository<>));
 
 builder.Services.AddSession(options =>
 {

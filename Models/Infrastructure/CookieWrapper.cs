@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 
-namespace AirBB.Models
+namespace AirBB.Models.Infrastructure
 {
     public class CookieWrapper
     {

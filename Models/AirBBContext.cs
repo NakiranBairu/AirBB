@@ -1,6 +1,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using AirBB.Models.ViewModels;
+using AirBB.Models.Domain;
 
 namespace AirBB.Models
 {

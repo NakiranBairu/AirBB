@@ -1,7 +1,10 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using AirBB.Models;
+using AirBB.Models.Domain;
+using AirBB.Models.Utilities;
 
-namespace AirBB.Models
+namespace AirBB.Models.Infrastructure
 {
     public interface ISessionManager
     {

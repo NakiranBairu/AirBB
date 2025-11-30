@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AirBB.Models
+namespace AirBB.Models.Domain
 {
-    public class User
+
+    public class User : IValidatableObject
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -36,6 +37,17 @@ namespace AirBB.Models
         // Navigation properties
         public virtual ICollection<Residence>? OwnedResidences { get; set; }
         public virtual ICollection<Reservation>? Reservations { get; set; }
+
+        // Custom validation: Either Email or PhoneNumber is required
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (string.IsNullOrWhiteSpace(Email) && string.IsNullOrWhiteSpace(PhoneNumber))
+            {
+                yield return new ValidationResult(
+                    "Either Email or Phone Number is required.",
+                    new[] { nameof(Email), nameof(PhoneNumber) });
+            }
+        }
     }
 
     public enum UserType

@@ -1,3 +1,6 @@
+using AirBB.Models.Domain;
+using AirBB.Models.Utilities;
+
 namespace AirBB.Models.ViewModels
 {
     public class HomeViewModel

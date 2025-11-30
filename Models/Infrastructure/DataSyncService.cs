@@ -1,11 +1,16 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore; 
 using AirBB.Models;
-namespace AirBB.Models
+using AirBB.Models.DataLayer;
+using AirBB.Models.DataLayer.Repositories;
+using AirBB.Models.Domain;
+using System.Linq.Expressions;
+
+namespace AirBB.Models.Infrastructure
 {
     public interface IDataSyncService
     {
-        void SyncSessionFromCookies();
+        Task SyncSessionFromCookies();
         void SyncCookiesFromSession();
         void EnsureDataConsistency();
         void ClearAllUserData();
@@ -15,20 +20,20 @@ namespace AirBB.Models
     {
         private readonly SessionWrapper _sessionWrapper;
         private readonly CookieWrapper _cookieWrapper;
-        private readonly AirBBContext _context;
+        private readonly IGenericRepository<Reservation> _reservationRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public DataSyncService(SessionWrapper sessionWrapper, CookieWrapper cookieWrapper, 
-                             AirBBContext context, IHttpContextAccessor httpContextAccessor)
+                             IGenericRepository<Reservation> reservationRepo, IHttpContextAccessor httpContextAccessor)
         {
             _sessionWrapper = sessionWrapper;
             _cookieWrapper = cookieWrapper;
-            _context = context;
+            _reservationRepo = reservationRepo;
             _httpContextAccessor = httpContextAccessor;
         }
 
         // Sync session from cookies on first load
-        public void SyncSessionFromCookies()
+        public async Task SyncSessionFromCookies()
         {
             var httpContext = _httpContextAccessor.HttpContext;
             if (httpContext == null) return;
@@ -40,12 +45,12 @@ namespace AirBB.Models
                 
                 if (cookieReservationIds.Any())
                 {
-                    // Convert reservation IDs to full reservation objects
-                    var reservations = _context.Reservations
+                    // Use repository Query to get reservations with includes
+                    var reservations = await _reservationRepo.Query()
                         .Include(r => r.Residence) 
                         .Include(r => r.Client)     
                         .Where(r => cookieReservationIds.Contains(r.ReservationId))
-                        .ToList();
+                        .ToListAsync();
 
                     _sessionWrapper.Reservations = reservations;
                 }

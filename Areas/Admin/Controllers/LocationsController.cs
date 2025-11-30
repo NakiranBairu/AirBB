@@ -1,23 +1,27 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AirBB.Models;
+using AirBB.Models.DataLayer.Repositories;
+using AirBB.Models.DataLayer;
+using AirBB.Models.Domain;
 
 namespace AirBB.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class LocationsController : Controller
     {
-        private readonly AirBBContext _context;
+        private readonly IGenericRepository<Location> _locRepo;
 
-        public LocationsController(AirBBContext context)
+        public LocationsController(IGenericRepository<Location> locRepo)
         {
-            _context = context;
+            _locRepo = locRepo;
         }
 
         // GET: Admin/Locations
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Locations.ToListAsync());
+            var locations = await _locRepo.GetAllAsync();
+            return View(locations);
         }
 
         // GET: Admin/Locations/Create
@@ -33,8 +37,7 @@ namespace AirBB.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(location);
-                await _context.SaveChangesAsync();
+                await _locRepo.AddAsync(location);
                 TempData["SuccessMessage"] = "Location created successfully!";
                 return RedirectToAction(nameof(Index));
             }
@@ -55,7 +58,7 @@ namespace AirBB.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            var location = await _context.Locations.FindAsync(id);
+            var location = await _locRepo.GetByIdAsync(id);
             if (location == null)
             {
                 return NotFound();
@@ -77,8 +80,7 @@ namespace AirBB.Areas.Admin.Controllers
             {
                 try
                 {
-                    _context.Update(location);
-                    await _context.SaveChangesAsync();
+                    await _locRepo.UpdateAsync(location);
                     TempData["SuccessMessage"] = "Location updated successfully!";
                 }
                 catch (DbUpdateConcurrencyException)
@@ -111,8 +113,11 @@ namespace AirBB.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            var location = await _context.Locations
-                .FirstOrDefaultAsync(m => m.LocationId == id);
+            var options = new QueryOptions<Location>
+            {
+                Filter = l => l.LocationId == id
+            };
+            var location = (await _locRepo.GetAllAsync(options)).FirstOrDefault();
             if (location == null)
             {
                 return NotFound();
@@ -126,11 +131,10 @@ namespace AirBB.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var location = await _context.Locations.FindAsync(id);
+            var location = await _locRepo.GetByIdAsync(id);
             if (location != null)
             {
-                _context.Locations.Remove(location);
-                await _context.SaveChangesAsync();
+                await _locRepo.DeleteAsync(location);
                 TempData["SuccessMessage"] = "Location deleted successfully!";
             }
             return RedirectToAction(nameof(Index));
@@ -138,7 +142,7 @@ namespace AirBB.Areas.Admin.Controllers
 
         private bool LocationExists(int id)
         {
-            return _context.Locations.Any(e => e.LocationId == id);
+            return _locRepo.Query().Any(e => e.LocationId == id);
         }
     }
 }
